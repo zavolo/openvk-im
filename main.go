@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -106,6 +107,28 @@ func startServer() {
 		}
 		lp_trans.LongPollHandler(c.Writer, c.Request, lpBroadcaster, lpRepo)
 	})
+
+	// Superapp queue channel (account-settings/presence realtime). The client
+	// long-polls it expecting a {"OK":1} keep-alive; hold for the requested wait
+	// window and answer OK so the connection stays alive without busy-looping.
+	queueHandler := func(c *gin.Context) {
+		wait := 25
+		if w := c.Query("wait"); w != "" {
+			if n, err := strconv.Atoi(w); err == nil && n > 0 {
+				wait = n
+			}
+		}
+		if wait > 30 {
+			wait = 30
+		}
+		select {
+		case <-time.After(time.Duration(wait) * time.Second):
+		case <-c.Request.Context().Done():
+		}
+		c.JSON(http.StatusOK, gin.H{"OK": 1})
+	}
+	r.GET("/queue", queueHandler)
+	r.POST("/queue", queueHandler)
 
 	endpointRouter := &endpoints.Router{
 		BaseHandler: core.BaseHandler{
