@@ -18,6 +18,15 @@ type Envelope struct {
 	MaxVer  int               `json:"max_version,omitempty"`
 }
 
+func (e Envelope) MarshalJSON() ([]byte, error) {
+	type alias Envelope
+	a := alias(e)
+	if a.Updates == nil {
+		a.Updates = []json.RawMessage{}
+	}
+	return json.Marshal(a)
+}
+
 type LPConfig struct {
 	Version   int
 	Mode      uint32
