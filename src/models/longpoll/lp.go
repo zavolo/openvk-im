@@ -12,7 +12,7 @@ import (
 type Envelope struct {
 	TS      uint64            `json:"ts"`
 	Updates []json.RawMessage `json:"updates"`
-	PTS     uint64            `json:"pts,omitempty"`
+	PTS     uint64            `json:"pts"`
 	Failed  int               `json:"failed,omitempty"`
 	MinVer  int               `json:"min_version,omitempty"`
 	MaxVer  int               `json:"max_version,omitempty"`
