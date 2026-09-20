@@ -96,6 +96,17 @@ func startServer() {
 		lp_trans.LongPollHandler(c.Writer, c.Request, lpBroadcaster, lpRepo)
 	})
 
+	r.POST("/nim", func(c *gin.Context) {
+		if err := c.Request.ParseForm(); err == nil && len(c.Request.PostForm) > 0 {
+			if c.Request.URL.RawQuery == "" {
+				c.Request.URL.RawQuery = c.Request.PostForm.Encode()
+			} else {
+				c.Request.URL.RawQuery = c.Request.URL.RawQuery + "&" + c.Request.PostForm.Encode()
+			}
+		}
+		lp_trans.LongPollHandler(c.Writer, c.Request, lpBroadcaster, lpRepo)
+	})
+
 	endpointRouter := &endpoints.Router{
 		BaseHandler: core.BaseHandler{
 			DB:          db.Instance,
